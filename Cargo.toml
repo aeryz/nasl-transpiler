@@ -1,5 +1,5 @@
 [package]
-name = "nasl-interpreter"
+name = "nasl-transpiler"
 version = "0.1.0"
 authors = ["aeryz"]
 edition = "2018"
