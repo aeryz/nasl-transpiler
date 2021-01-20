@@ -252,9 +252,14 @@ impl<'a> Lexer<'a> {
             } else if on_escape {
                 match ch {
                     'n' | 't' | 'v' | 'r' | '\'' | '"' | 'b' | '\\' => {}
-                    _ => return Err(format!("Unexpected escape character. \
+                    _ => {
+                        return Err(format!(
+                            "Unexpected escape character. \
                                              Expected one of '\\n, \\t, \\v, \\r, \\', \\\", \
-                                             \\b', got \\{}", self.cur_char.unwrap()))
+                                             \\b', got \\{}",
+                            self.cur_char.unwrap()
+                        ))
+                    }
                 }
                 on_escape = false;
             } else if ch == '\'' {
@@ -353,9 +358,7 @@ mod tests {
             '\n' '\r' '\t' '\b' '\\' '\'' '\"' '\v' '\F'
         "#;
 
-        let expected = [
-            "\\n", "\\r", "\\t", "\\b", "\\\\", "\\'", "\\\"", "\\v",
-        ];
+        let expected = ["\\n", "\\r", "\\t", "\\b", "\\\\", "\\'", "\\\"", "\\v"];
 
         let mut lexer = Lexer::new(data);
         for exp in &expected {
