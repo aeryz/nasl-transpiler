@@ -1,4 +1,4 @@
-# Nasl Traspiler
+# Nasl Transpiler
 
 [![CI](https://github.com/aeryz/nasl-transpiler/workflows/CI/badge.svg)](https://github.com/aeryz/nasl-transpiler/actions?query=workflow%3ACI)
 
