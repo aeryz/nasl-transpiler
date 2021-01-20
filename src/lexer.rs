@@ -310,14 +310,64 @@ impl<'a> Lexer<'a> {
         &self.data[cur_pos..self.cur_pos]
     }
 
+    fn read_hexadecimal(&mut self, start_pos: usize) -> LResult<i32> {
+        while let Some(ch) = self.cur_char {
+            if !ch.is_ascii_hexdigit() {
+                if ch != ' ' {
+                    return Err(format!("Unexpected token in hexadecimal number {}", ch));
+                }
+                break;
+            }
+            let _ = self.read_char();
+        }
+
+        if self.cur_pos - start_pos <= 2 {
+            return Err(format!(
+                "Some number needs to be present after 'x' in a hexadecimal number"
+            ));
+        }
+
+        i32::from_str_radix(&self.data[start_pos + 2..self.cur_pos], 16)
+            .map_err(|e| format!("Error occured while parsing hexadecimal number {}", e))
+    }
+
+    fn read_octal(&mut self, start_pos: usize) -> LResult<i32> {
+        while let Some(ch) = self.cur_char {
+            if !ch.is_numeric() {
+                if ch != ' ' {
+                    return Err(format!("Unexpected token in octal number {}", ch));
+                }
+                break;
+            }
+            let _ = self.read_char();
+        }
+        i32::from_str_radix(&self.data[start_pos..self.cur_pos], 8)
+            .map_err(|e| format!("Error occured while parsing octal number {}", e))
+    }
+
     fn read_number(&mut self) -> LResult<i32> {
         let cur_pos = self.cur_pos;
+
+        if self.cur_char == Some('0') {
+            let res = match self.peek_char {
+                Some('x') => {
+                    let _ = self.read_char();
+                    let _ = self.read_char();
+                    self.read_hexadecimal(cur_pos)
+                }
+                Some(ch) if ch.is_numeric() => self.read_octal(cur_pos),
+                ch => Err(format!("Unexpected token while parsing a number: {:?}", ch)),
+            };
+            return res;
+        }
+
         while let Some(ch) = self.cur_char {
             if !ch.is_numeric() {
                 break;
             }
             let _ = self.read_char();
         }
+
         self.data[cur_pos..self.cur_pos]
             .parse::<i32>()
             .map_err(|_| {
@@ -334,7 +384,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn operators_pass() {
+    fn numbers() {
+        let data = "0xFF 016 32 018 0xCZ";
+        let mut lexer = Lexer::new(data);
+        assert_eq!(Token::Num(0xff), lexer.next_token().unwrap());
+        assert_eq!(Token::Num(0o16), lexer.next_token().unwrap());
+        assert_eq!(Token::Num(32), lexer.next_token().unwrap());
+        assert!(lexer.next_token().is_err());
+        assert!(lexer.next_token().is_err());
+    }
+
+    #[test]
+    fn operators() {
         let ops = [
             "+", "-", "*", "/", "%", "=", "==", "!=", "&&", "||", ">", "<", ">=", "<=", "!", "&",
             "|", "^", "+=", "-=", "/=", "%=", "*=", "^=", ">>", "<<", ">>=", "<<=", ">>>", "++",
