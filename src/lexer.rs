@@ -48,8 +48,8 @@ impl<'a> Lexer<'a> {
             Some(']') => Token::Rbracket,
             Some(';') => Token::SemiColon,
             Some(':') => Token::Colon,
-            Some('"') => Token::Str(self.read_str('"')?),
-            Some('\'') => Token::Str(self.read_str('\'')?),
+            Some('"') => Token::Str(self.read_impure_str()?),
+            Some('\'') => Token::Str(self.read_pure_str()?),
             Some(',') => Token::Comma,
             Some('+') => {
                 let token = match self.peek_char {
@@ -225,21 +225,45 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    fn read_str(&mut self, ind: char) -> LResult<&'a str> {
+    /// Read `pure` and `impure` strings
+    ///
+    /// `Impure` strings are entered between double qoutes and are not converted.
+    /// `Pure` strings are returned between single quotes and escapte sequences are transformed.
+    ///
+    fn read_impure_str(&mut self) -> LResult<&'a str> {
+        let _ = self.read_char();
+        let cur_pos = self.cur_pos;
+        while let Some(ch) = self.cur_char {
+            if ch == '"' {
+                return Ok(&self.data[cur_pos..self.cur_pos]);
+            }
+            let _ = self.read_char();
+        }
+        Err(String::from("Unexpected eof while reading a string"))
+    }
+
+    fn read_pure_str(&mut self) -> LResult<&'a str> {
         let _ = self.read_char();
         let cur_pos = self.cur_pos;
         let mut on_escape = false;
         while let Some(ch) = self.cur_char {
-            if ch == '\\' && ind == '\'' {
+            if ch == '\\' {
                 on_escape = true;
-            } else if ch == ind && !on_escape {
+            } else if on_escape {
+                match self.read_char() {
+                    Some('n') | Some('t') | Some('v') | Some('r') | Some('\'') | Some('"') | Some('b') | Some('\\') => {}
+                    None => return Err("Unexpected eof while reading a string.".to_owned()),
+                    _ => return Err(format!("Unexpected escape character. Expected one of '\\n, \\t, \\v, \\r, \\', \\\", \\b', got \\{}", self.cur_char.unwrap()))
+                }
+            } else if ch == '"' {
                 return Ok(&self.data[cur_pos..self.cur_pos]);
             } else {
                 on_escape = false;
             }
+
             let _ = self.read_char();
         }
-        Err(String::from(":("))
+        Err(String::from("Unexpected eof while reading a string"))
     }
 
     fn eat_whitespace_or_comment(&mut self) {
