@@ -247,12 +247,14 @@ impl<'a> Lexer<'a> {
         let cur_pos = self.cur_pos;
         let mut on_escape = false;
         while let Some(ch) = self.cur_char {
-            if ch == '\\' {
+            if ch == '\\' && !on_escape {
                 on_escape = true;
             } else if on_escape {
                 match ch {
                     'n' | 't' | 'v' | 'r' | '\'' | '"' | 'b' | '\\' => {}
-                    _ => return Err(format!("Unexpected escape character. Expected one of '\\n, \\t, \\v, \\r, \\', \\\", \\b', got \\{}", self.cur_char.unwrap()))
+                    _ => return Err(format!("Unexpected escape character. \
+                                             Expected one of '\\n, \\t, \\v, \\r, \\', \\\", \
+                                             \\b', got \\{}", self.cur_char.unwrap()))
                 }
                 on_escape = false;
             } else if ch == '\'' {
@@ -343,5 +345,22 @@ mod tests {
             assert_eq!(Token::from_str(ops_iter.next().unwrap()), tok);
         }
         assert_eq!(ops_iter.next(), None);
+    }
+
+    #[test]
+    fn escape_chars() {
+        let data = r#"
+            '\n' '\r' '\t' '\b' '\\' '\'' '\"' '\v' '\F'
+        "#;
+
+        let expected = [
+            "\\n", "\\r", "\\t", "\\b", "\\\\", "\\'", "\\\"", "\\v",
+        ];
+
+        let mut lexer = Lexer::new(data);
+        for exp in &expected {
+            assert_eq!(Ok(Token::PureStr(exp)), lexer.next_token());
+        }
+        assert!(lexer.next_token().is_err());
     }
 }
