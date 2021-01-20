@@ -51,7 +51,8 @@ pub enum Token<'a> {
     SemiColon,
     Comma,
     Ident(&'a str),
-    Str(&'a str),
+    PureStr(&'a str),
+    ImpureStr(&'a str),
     Colon,
 
     Num(i32),
