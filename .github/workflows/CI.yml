@@ -56,11 +56,8 @@ jobs:
 
         include:
           - rust: stable
-            features: "--features full"
           - rust: beta
-            features: "--features full"
           - rust: nightly
-            features: "--features full,nightly"
 
     runs-on: ${{ matrix.os }}
 
@@ -107,4 +104,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: rustdoc
-          args: --features full -- --cfg docsrs -D broken-intra-doc-links
+          args: -- --cfg docsrs -D broken-intra-doc-links
