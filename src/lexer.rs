@@ -228,9 +228,14 @@ impl<'a> Lexer<'a> {
     fn read_str(&mut self, ind: char) -> LResult<&'a str> {
         let _ = self.read_char();
         let cur_pos = self.cur_pos;
+        let mut on_escape = false;
         while let Some(ch) = self.cur_char {
-            if ch == ind {
+            if ch == '\\' && ind == '\'' {
+                on_escape = true;
+            } else if ch == ind && !on_escape {
                 return Ok(&self.data[cur_pos..self.cur_pos]);
+            } else {
+                on_escape = false;
             }
             let _ = self.read_char();
         }
