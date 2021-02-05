@@ -73,6 +73,8 @@ pub enum Token<'a> {
     Include,
     LocalVar,
     GlobalVar,
+    Repeat,
+    Until,
 }
 
 impl<'a> Token<'a> {
@@ -93,6 +95,8 @@ impl<'a> Token<'a> {
             "include" => Token::Include,
             "local_var" => Token::LocalVar,
             "global_var" => Token::GlobalVar,
+            "repeat" => Token::Repeat,
+            "until" => Token::Until,
             _ => Token::Ident(data),
         }
     }

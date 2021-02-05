@@ -436,12 +436,13 @@ mod tests {
     fn keywords() {
         let data = r#"
             if else function NULL TRUE FALSE return for while break continue foreach
-            include local_var global_var
+            include local_var global_var repeat until
         "#;
 
         let expected = vec![Token::If, Token::Else, Token::Function, Token::Null, Token::True,
         Token::False, Token::Return, Token::For, Token::While, Token::Break, Token::Continue,
-        Token::Foreach, Token::Include, Token::LocalVar, Token::GlobalVar];
+        Token::Foreach, Token::Include, Token::LocalVar, Token::GlobalVar, Token::Repeat,
+        Token::Until];
 
         let mut lexer = Lexer::new(data);
         for exp in expected {
