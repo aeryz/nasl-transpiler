@@ -59,6 +59,20 @@ pub enum Token<'a> {
 
     Eof,
     Comment,
+
+    Function,
+    Null,
+    True,
+    False,
+    Return,
+    For,
+    While,
+    Break,
+    Continue,
+    Foreach,
+    Include,
+    LocalVar,
+    GlobalVar,
 }
 
 impl<'a> Token<'a> {
@@ -66,6 +80,19 @@ impl<'a> Token<'a> {
         match data {
             "if" => Token::If,
             "else" => Token::Else,
+            "function" => Token::Function,
+            "NULL" => Token::Null,
+            "TRUE" => Token::True,
+            "FALSE" => Token::False,
+            "return" => Token::Return,
+            "for" => Token::For,
+            "while" => Token::While,
+            "break" => Token::Break,
+            "continue" => Token::Continue,
+            "foreach" => Token::Foreach,
+            "include" => Token::Include,
+            "local_var" => Token::LocalVar,
+            "global_var" => Token::GlobalVar,
             _ => Token::Ident(data),
         }
     }

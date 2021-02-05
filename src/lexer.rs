@@ -310,6 +310,7 @@ impl<'a> Lexer<'a> {
         &self.data[cur_pos..self.cur_pos]
     }
 
+    // TODO: No need to inc
     fn read_hexadecimal(&mut self, start_pos: usize) -> LResult<i32> {
         while let Some(ch) = self.cur_char {
             if !ch.is_ascii_hexdigit() {
@@ -349,16 +350,19 @@ impl<'a> Lexer<'a> {
         let cur_pos = self.cur_pos;
 
         if self.cur_char == Some('0') {
-            let res = match self.peek_char {
+            match self.peek_char {
                 Some('x') => {
                     let _ = self.read_char();
                     let _ = self.read_char();
-                    self.read_hexadecimal(cur_pos)
+                    return self.read_hexadecimal(cur_pos);
                 }
-                Some(ch) if ch.is_numeric() => self.read_octal(cur_pos),
-                ch => Err(format!("Unexpected token while parsing a number: {:?}", ch)),
+                Some(ch) => {
+                    if ch.is_numeric() {
+                        return self.read_octal(cur_pos);
+                    }
+                }
+                ch => return Err(format!("Unexpected token while parsing a number: {:?}", ch)),
             };
-            return res;
         }
 
         while let Some(ch) = self.cur_char {
@@ -426,5 +430,22 @@ mod tests {
             assert_eq!(Ok(Token::PureStr(exp)), lexer.next_token());
         }
         assert!(lexer.next_token().is_err());
+    }
+
+    #[test]
+    fn keywords() {
+        let data = r#"
+            if else function NULL TRUE FALSE return for while break continue foreach
+            include local_var global_var
+        "#;
+
+        let expected = vec![Token::If, Token::Else, Token::Function, Token::Null, Token::True,
+        Token::False, Token::Return, Token::For, Token::While, Token::Break, Token::Continue,
+        Token::Foreach, Token::Include, Token::LocalVar, Token::GlobalVar];
+
+        let mut lexer = Lexer::new(data);
+        for exp in expected {
+            assert_eq!(Ok(exp), lexer.next_token());
+        }
     }
 }
