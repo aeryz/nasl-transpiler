@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub enum Expression<'a> {
     Identifier(&'a str),
     Number(i32),
@@ -29,6 +30,7 @@ pub enum Expression<'a> {
     }
 }
 
+#[derive(Debug)]
 pub enum Statement<'a> {
     // if ($cond) $if_block
     // else $else_block
@@ -73,5 +75,5 @@ pub enum Statement<'a> {
     Block {
         statements: Vec<Statement<'a>>,
     },
-
+    Expression(Box<Expression<'a>>),
 }

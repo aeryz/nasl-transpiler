@@ -1,5 +1,5 @@
-#[derive(Debug, PartialEq, Eq)]
-pub enum Token<'a> {
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum TokenType {
     /* Operators */
     Plus,     // +
     Minus,    // -
@@ -50,12 +50,12 @@ pub enum Token<'a> {
 
     SemiColon,
     Comma,
-    Ident(&'a str),
-    PureStr(&'a str),
-    ImpureStr(&'a str),
+    Ident,
+    PureStr,
+    ImpureStr,
     Colon,
 
-    Num(i32),
+    Num,
 
     Eof,
     Comment,
@@ -77,70 +77,77 @@ pub enum Token<'a> {
     Until,
 }
 
+pub struct Token<'a> {
+    pub literal: &'a str,
+    pub ty: TokenType,
+}
+
 impl<'a> Token<'a> {
-    pub fn from_ident(data: &'a str) -> Self {
-        match data {
-            "if" => Token::If,
-            "else" => Token::Else,
-            "function" => Token::Function,
-            "NULL" => Token::Null,
-            "TRUE" => Token::True,
-            "FALSE" => Token::False,
-            "return" => Token::Return,
-            "for" => Token::For,
-            "while" => Token::While,
-            "break" => Token::Break,
-            "continue" => Token::Continue,
-            "foreach" => Token::Foreach,
-            "include" => Token::Include,
-            "local_var" => Token::LocalVar,
-            "global_var" => Token::GlobalVar,
-            "repeat" => Token::Repeat,
-            "until" => Token::Until,
-            _ => Token::Ident(data),
-        }
+    pub fn from_ident(literal: &'a str) -> Self {
+        let ty = match literal {
+            "if" => TokenType::If,
+            "else" => TokenType::Else,
+            "function" => TokenType::Function,
+            "NULL" => TokenType::Null,
+            "TRUE" => TokenType::True,
+            "FALSE" => TokenType::False,
+            "return" => TokenType::Return,
+            "for" => TokenType::For,
+            "while" => TokenType::While,
+            "break" => TokenType::Break,
+            "continue" => TokenType::Continue,
+            "foreach" => TokenType::Foreach,
+            "include" => TokenType::Include,
+            "local_var" => TokenType::LocalVar,
+            "global_var" => TokenType::GlobalVar,
+            "repeat" => TokenType::Repeat,
+            "until" => TokenType::Until,
+            _ => TokenType::Ident,
+        };
+        TokenType { literal, ty }
     }
 
     // TODO: This only supports operators
-    pub fn from_str(data: &'a str) -> Self {
-        match data {
-            "+" => Token::Plus,
-            "-" => Token::Minus,
-            "*" => Token::Mul,
-            "/" => Token::Div,
-            "%" => Token::Mod,
-            "=" => Token::Assign,
-            "==" => Token::Equ,
-            "!=" => Token::Nequ,
-            "&&" => Token::And,
-            "||" => Token::Or,
-            ">" => Token::Gt,
-            "<" => Token::Lt,
-            ">=" => Token::Gte,
-            "<=" => Token::Lte,
-            "!" => Token::Not,
-            "&" => Token::BwAnd,
-            "|" => Token::BwOr,
-            "^" => Token::BwXor,
-            "+=" => Token::PlusEq,
-            "-=" => Token::MinusEq,
-            "/=" => Token::DivEq,
-            "%=" => Token::ModEq,
-            "*=" => Token::MulEq,
-            "^=" => Token::XorEq,
-            ">>" => Token::Shr,
-            "<<" => Token::Shl,
-            ">>=" => Token::ShrEq,
-            "<<=" => Token::ShlEq,
-            ">>>" => Token::Ushr,
-            "++" => Token::Incr,
-            "--" => Token::Decr,
-            "**" => Token::Pow,
-            "><" => Token::Substr,
-            ">!<" => Token::NSUBSTR,
-            "=~" => Token::ReMatch,
-            "!~" => Token::NreMatch,
+    pub fn from_str(literal: &'a str) -> Self {
+        let ty = match literal {
+            "+" => TokenType::Plus,
+            "-" => TokenType::Minus,
+            "*" => TokenType::Mul,
+            "/" => TokenType::Div,
+            "%" => TokenType::Mod,
+            "=" => TokenType::Assign,
+            "==" => TokenType::Equ,
+            "!=" => TokenType::Nequ,
+            "&&" => TokenType::And,
+            "||" => TokenType::Or,
+            ">" => TokenType::Gt,
+            "<" => TokenType::Lt,
+            ">=" => TokenType::Gte,
+            "<=" => TokenType::Lte,
+            "!" => TokenType::Not,
+            "&" => TokenType::BwAnd,
+            "|" => TokenType::BwOr,
+            "^" => TokenType::BwXor,
+            "+=" => TokenType::PlusEq,
+            "-=" => TokenType::MinusEq,
+            "/=" => TokenType::DivEq,
+            "%=" => TokenType::ModEq,
+            "*=" => TokenType::MulEq,
+            "^=" => TokenType::XorEq,
+            ">>" => TokenType::Shr,
+            "<<" => TokenType::Shl,
+            ">>=" => TokenType::ShrEq,
+            "<<=" => TokenType::ShlEq,
+            ">>>" => TokenType::Ushr,
+            "++" => TokenType::Incr,
+            "--" => TokenType::Decr,
+            "**" => TokenType::Pow,
+            "><" => TokenType::Substr,
+            ">!<" => TokenType::NSUBSTR,
+            "=~" => TokenType::ReMatch,
+            "!~" => TokenType::NreMatch,
             _ => panic!("Unknown token {}", data),
-        }
+        };
+        TokenType { literal, ty }
     }
 }
